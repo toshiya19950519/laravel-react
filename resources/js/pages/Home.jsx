@@ -3,6 +3,7 @@ import { Button, Card } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import MainTable from '../components/MainTable';
 import axios from 'axios';
+import PostFrom from '../components/PostFrom';
 
 
 const useStyles = makeStyles((theme) => createStyles({
@@ -22,6 +23,7 @@ function Home() {
     //定義したスタイルを利用するための設定
     const classes = useStyles();
     const [posts, setPosts] = useState([]);
+    const [formData, setFormData] = useState({name:'', content:''});　
 
     useEffect(() => {
         getPostsData();
@@ -35,6 +37,35 @@ function Home() {
             })
             .catch(() => {
                 console.log('通信に失敗しました');
+            });
+    }
+
+    const inputChange = (e) => {
+        const key = e.target.name;
+        const value = e.target.value;
+        formData[key] = value;
+        let data = Object.assign({}, formData);
+        setFormData(data);
+    }
+
+    const createPost = async() => {
+        if(formData==''){
+            return;
+        }
+
+        await axios
+            .post('/api/post/create',{
+                name:formData.name,
+                content: formData.content
+            })
+            .then((res) => {
+                const tempPosts = posts
+                tempPosts.push(res.data);
+                setPosts(tempPosts);
+                setFormData('');
+            })
+            .catch(error => {
+                console.log(error) ;
             });
     }
 
@@ -55,6 +86,9 @@ function Home() {
                 <div className="col-md-10">
                     <div className="card">
                         <h1>タスク管理</h1>
+                        <Card className={classes.card}>
+                            <PostFrom data={formData} btnFunc={createPost} inputChange={inputChange}/>
+                        </Card>
                         <Card className={classes.card}>
                             <MainTable headerList={headerList} rows={rows} /> 
                         </Card>
