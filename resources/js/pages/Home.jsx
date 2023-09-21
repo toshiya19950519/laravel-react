@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Card } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/core/styles';
 import MainTable from '../components/MainTable';
-import { purple } from '@material-ui/core/colors';
+import axios from 'axios';
 
 
 const useStyles = makeStyles((theme) => createStyles({
@@ -12,26 +12,42 @@ const useStyles = makeStyles((theme) => createStyles({
     },
 }));
 
+
+
 //ヘッダーのコンテンツ用の配列定義
 const headerList = ['名前', 'タスク内容', '編集', '完了'];
 
-let rows = [
-    {
-        name: "モーリー",
-        content: "肩トレ",
-        editBtn: <Button color="secondary" variant="contained">編集</Button>,
-        deleteBtn: <Button color="primary" variant="contained">完了</Button>,
-    },{
-        name: "ドンキーコング",
-        content: "バナナ補給",
-        editBtn: <Button color="secondary" variant="contained">編集</Button>,
-        deleteBtn: <Button color="primary" variant="contained">完了</Button>,
-    },
-];
 
 function Home() {
     //定義したスタイルを利用するための設定
     const classes = useStyles();
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        getPostsData();
+    },[])
+
+    const getPostsData = () => {
+        axios
+            .get('/api/posts')
+            .then(response => {
+                setPosts(response.data);
+            })
+            .catch(() => {
+                console.log('通信に失敗しました');
+            });
+    }
+
+    let rows = [];
+
+    posts.map((post) =>
+        rows.push({
+            name: post.name,
+            content: post.content,
+            editBtn: <Button color="secondary" variant='contained'>編集</Button>,
+            deleteBtn: <Button color="primary" variant='contained'>完了</Button>
+        })
+    );
 
     return (
         <div className="container">
